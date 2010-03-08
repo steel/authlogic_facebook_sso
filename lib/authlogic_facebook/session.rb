@@ -76,9 +76,15 @@ module AuthlogicFacebook
       protected
       # Override this if you want only some requests to use facebook
       def authenticating_with_facebook?
-        !authenticating_with_unauthorized_record? &&
-          !self.class.facebook_api_key.blank? &&
-          !self.class.facebook_secret_key.blank?
+        self.facebook_api_params_provided? && !authenticating_with_unauthorized_record?
+      end
+
+      def facebook_api_params_provided?
+        return @facebook_api_params_provided_p if defined? @facebook_api_params_provided_p
+
+        @facebook_api_params_provided_p =
+            (!self.class.facebook_api_key.blank? && !self.class.facebook_secret_key.blank? && true) ||
+                warn("Expected #{self.class.name} to declare Facebook API key and secret.  Not authenticating using Facebook." || false)
       end
 
       def redirect_to_facebook
