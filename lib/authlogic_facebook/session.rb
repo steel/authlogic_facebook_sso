@@ -144,8 +144,8 @@ module AuthlogicFacebook
         end
 
         begin
-          params = JSON.parse(controller.params['session'] || '')
-        rescue JSON::JSONError
+          params = ActiveSupport::JSON.decode(controller.params['session'] || '')
+        rescue StandardError
           params = {}
         end
 
