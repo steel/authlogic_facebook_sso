@@ -101,9 +101,16 @@ module AuthlogicFacebook
 
       protected
 
-      # Override this if you want only some requests to use facebook
-      def authenticating_with_facebook?
-        self.facebook_api_params_provided? && !self.authenticating_with_unauthorized_record?
+      def facebook_auto_register?
+        self.class.facebook_auto_register
+      end
+
+      def facebook_uid_field
+        self.class.facebook_uid_field
+      end
+
+      def facebook_session_field
+        self.class.facebook_session_field
       end
 
       def facebook_api_params_provided?
@@ -114,25 +121,9 @@ module AuthlogicFacebook
                 warn("Expected #{self.class.name} to declare Facebook API key and secret.  Not authenticating using Facebook." || false)
       end
 
-      def validate_by_facebook
-        if self.facebook_callback?
-          fb_uid = self.facebook_session['uid']
-          self.attempted_record = klass.first(:conditions => { self.facebook_uid_field => fb_uid })
-
-          if self.attempted_record || !facebook_auto_register?
-            !!self.attempted_record
-          else
-            self.attempted_record = klass.new
-            self.attempted_record.send(:"#{facebook_uid_field}=", fb_uid)
-            if self.attempted_record.respond_to?(:before_connect)
-              self.attempted_record.send(:before_connect, self.facebook_session)
-            end
-
-            self.attempted_record.save(false)
-          end
-        else
-          false
-        end
+      # Override this if you want only some requests to use facebook
+      def authenticating_with_facebook?
+        self.facebook_api_params_provided? && !authenticating_with_unauthorized_record?
       end
 
       def unverified_facebook_params
@@ -145,6 +136,10 @@ module AuthlogicFacebook
         end
 
         @unverified_facebook_params = params.is_a?(Hash) ? params : {}
+      end
+
+      def facebook_callback?
+        !self.unverified_facebook_params['uid'].blank?
       end
 
       def facebook_session
@@ -172,20 +167,25 @@ module AuthlogicFacebook
         @facebook_session = {'uid' => uid, 'session_key' => session_key}
       end
 
-      def facebook_auto_register?
-        self.class.facebook_auto_register
-      end
+      def validate_by_facebook
+        if self.facebook_callback?
+          fb_uid = self.facebook_session['uid']
+          self.attempted_record = klass.first(:conditions => { self.facebook_uid_field => fb_uid })
 
-      def facebook_callback?
-        !self.unverified_facebook_params['uid'].blank?
-      end
+          if self.attempted_record || !self.facebook_auto_register?
+            !!self.attempted_record
+          else
+            self.attempted_record = klass.new
+            self.attempted_record.send(:"#{facebook_uid_field}=", fb_uid)
+            if self.attempted_record.respond_to?(:before_connect)
+              self.attempted_record.send(:before_connect, self.facebook_session)
+            end
 
-      def facebook_uid_field
-        self.class.facebook_uid_field
-      end
-
-      def facebook_session_field
-        self.class.facebook_session_field
+            self.attempted_record.save(false)
+          end
+        else
+          false
+        end
       end
 
       def facebook_login_params
