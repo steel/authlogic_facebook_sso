@@ -66,13 +66,6 @@ module AuthlogicFacebook
         end
       end
 
-      # Clears out the block if we are authenticating with Facebook so that we
-      # can redirect without a DoubleRender error.
-      def save(&block)
-        block = nil if redirecting_to_facebook?
-        super(&block)
-      end
-
       protected
       # Override this if you want only some requests to use facebook
       def authenticating_with_facebook?
@@ -85,10 +78,6 @@ module AuthlogicFacebook
         @facebook_api_params_provided_p =
             (!self.class.facebook_api_key.blank? && !self.class.facebook_secret_key.blank? && true) ||
                 warn("Expected #{self.class.name} to declare Facebook API key and secret.  Not authenticating using Facebook." || false)
-      end
-
-      def redirect_to_facebook
-        controller.redirect_to(facebook_login_url)
       end
 
       private
@@ -109,8 +98,7 @@ module AuthlogicFacebook
             return self.attempted_record.save(false)
           end
         else
-          redirect_to_facebook
-          return false
+          false
         end
       end
 
@@ -158,10 +146,6 @@ module AuthlogicFacebook
 
       def facebook_callback?
         !unverified_facebook_params['uid'].blank?
-      end
-
-      def redirecting_to_facebook?
-        authenticating_with_facebook? && !facebook_callback?
       end
 
       def facebook_uid_field
