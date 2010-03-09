@@ -68,13 +68,13 @@ module AuthlogicFacebook
       alias_method :facebook_auto_register=, :facebook_auto_register
       alias_method :facebook_auto_register?, :facebook_auto_register
 
-      # What is the name of the method that should be called in the event of
+      # What is the name of the method that should be called before the event of
       # a successful authentication via facebook connect?
       #
       # * <tt>Default:</tt> :during_connect
       # * <tt>Accepts:</tt> Symbol
       def facebook_connect_callback(value=nil)
-        rw_config(:facebook_connect_callback, value, :during_connect)
+        rw_config(:facebook_connect_callback, value, :before_facebook_connect)
       end
       alias_method :facebook_connect_callback=, :facebook_connect_callback
     end
@@ -122,7 +122,7 @@ module AuthlogicFacebook
                 warn("Expected #{self.class.name} to declare Facebook API key and secret.  Not authenticating using Facebook." || false)
       end
 
-      # Override this if you want only some requests to use facebook
+      # Override this if you only want some requests to use facebook
       def authenticating_with_facebook?
         self.facebook_api_params_provided? && !authenticating_with_unauthorized_record?
       end
@@ -152,7 +152,7 @@ module AuthlogicFacebook
           self.attempted_record.save(false)
         else
           errors.add_to_base(I18n.t('error_messages.facebook_connect_by_unregistered_user',
-              :default => 'Your Facebook account is not connected to any registered users on file.'))
+              :default => 'Your Facebook account is not connected to any registered user on file.'))
 
           false
         end
