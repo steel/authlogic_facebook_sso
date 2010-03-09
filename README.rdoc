@@ -1,6 +1,6 @@
 = authlogic_facebook
 
-This is a Facebook plugin for authlogic.  Facebooker is NOT required.
+This is a Facebook Connect plugin for Authlogic. Facebooker is not required.
 
 == Note on Patches/Pull Requests
 
