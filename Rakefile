@@ -5,12 +5,11 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "authlogic_facebook"
-    gem.summary = %Q{Authlogic plugin to support Facebook without Facebooker}
-    gem.description = %Q{Authlogic plugin to support Facebook without Facebooker.  A small unobtrusive gem (mini_fb) is used instead.}
-    gem.email = "GICodeWarrior@gmail.com"
-    gem.homepage = "http://github.com/GICodeWarrior/authlogic_facebook"
-    gem.authors = ["Rusty Burchfield"]
-    gem.add_dependency "mini_fb", ">= 0.1.0"
+    gem.summary = %Q{Authlogic plugin to support Facebook Connect without Facebooker.}
+    gem.description = %Q{Authlogic plugin to support Facebook Connect without Facebooker.}
+    gem.email = "GICodeWarrior@gmail.com, bts@gmail.com"
+    gem.homepage = "http://github.com/bts/authlogic_facebook"
+    gem.authors = ["Rusty Burchfield, Brian Schroeder"]
     gem.add_dependency "authlogic", ">= 2.1.3"
     gem.add_development_dependency "rspec", ">= 1.2.9"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
