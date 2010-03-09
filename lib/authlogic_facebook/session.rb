@@ -62,10 +62,21 @@ module AuthlogicFacebook
       #
       # * <tt>Default:</tt> false
       # * <tt>Accepts:</tt> Boolean
-      def facebook_auto_register(value=true)
+      def facebook_auto_register(value=nil)
         rw_config(:facebook_auto_register, value, false)
       end
       alias_method :facebook_auto_register=, :facebook_auto_register
+      alias_method :facebook_auto_register?, :facebook_auto_register
+
+      # What is the name of the method that should be called in the event of
+      # a successful authentication via facebook connect?
+      #
+      # * <tt>Default:</tt> :during_connect
+      # * <tt>Accepts:</tt> Symbol
+      def facebook_connect_callback(value=nil)
+        rw_config(:facebook_connect_callback, value, :during_connect)
+      end
+      alias_method :facebook_connect_callback=, :facebook_connect_callback
     end
 
     module Methods
@@ -73,6 +84,8 @@ module AuthlogicFacebook
         klass.class_eval do
           attr_accessor :facebook_uid, :facebook_session
           validate :validate_by_facebook, :if => :authenticating_with_facebook?
+          delegate :facebook_auto_register?, :facebook_uid_field, :facebook_session_field, :facebook_api_key, :facebook_secret_key, :facebook_connect_callback,
+              :to => "self.class"
         end
       end
 
@@ -101,23 +114,11 @@ module AuthlogicFacebook
 
       protected
 
-      def facebook_auto_register?
-        self.class.facebook_auto_register
-      end
-
-      def facebook_uid_field
-        self.class.facebook_uid_field
-      end
-
-      def facebook_session_field
-        self.class.facebook_session_field
-      end
-
       def facebook_api_params_provided?
         return @facebook_api_params_provided_p if defined? @facebook_api_params_provided_p
 
         @facebook_api_params_provided_p =
-            (!self.class.facebook_api_key.blank? && !self.class.facebook_secret_key.blank? && true) ||
+            (!self.facebook_api_key.blank? && !self.facebook_secret_key.blank? && true) ||
                 warn("Expected #{self.class.name} to declare Facebook API key and secret.  Not authenticating using Facebook." || false)
       end
 
@@ -126,86 +127,28 @@ module AuthlogicFacebook
         self.facebook_api_params_provided? && !authenticating_with_unauthorized_record?
       end
 
-      def unverified_facebook_params
-        return @unverified_facebook_params if defined? @unverified_facebook_params
-
-        begin
-          params = ActiveSupport::JSON.decode(self.controller.params['session'] || '')
-        rescue StandardError
-          params = {}
-        end
-
-        @unverified_facebook_params = params.is_a?(Hash) ? params : {}
-      end
-
-      def facebook_callback?
-        !self.unverified_facebook_params['uid'].blank?
-      end
-
-      def facebook_session
-        return @facebook_session if defined?(@facebook_session)
-
-        session_key = self.unverified_facebook_params['session_key']
-
-        uid = nil
-        params = {'session_key' => session_key, 'format' => 'JSON'}
-        10.times do
-          begin
-            uid = MiniFB.call(self.class.facebook_api_key,
-                              self.class.facebook_secret_key,
-                              'Users.getLoggedInUser', params)
-            break
-          rescue Errno::ECONNRESET, EOFError => e
-            exception = e
-          end
-        end
-
-        if !uid
-          raise exception
-        end
-
-        @facebook_session = {'uid' => uid, 'session_key' => session_key}
-      end
-
       def validate_by_facebook
-        if self.facebook_callback?
-          fb_uid = self.facebook_session['uid']
-          self.attempted_record = klass.first(:conditions => { self.facebook_uid_field => fb_uid })
+        return false unless self.facebook_uid && self.facebook_session
 
-          if self.attempted_record || !self.facebook_auto_register?
-            !!self.attempted_record
-          else
-            self.attempted_record = klass.new
-            self.attempted_record.send(:"#{facebook_uid_field}=", fb_uid)
-            if self.attempted_record.respond_to?(:before_connect)
-              self.attempted_record.send(:before_connect, self.facebook_session)
-            end
+        found_record = klass.first(:conditions => { self.facebook_uid_field => self.facebook_uid })
 
-            self.attempted_record.save(false)
+        if found_record || self.facebook_auto_register?
+          self.attempted_record = found_record || klass.new
+          # use #send in case the attributes are protected
+          self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
+          self.attempted_record.send(:"#{self.facebook_session_field}=", self.facebook_session)
+
+          if self.attempted_record.respond_to?(self.facebook_connect_callback)
+            self.attempted_record.send(self.facebook_connect_callback, self.details)
           end
+
+          self.attempted_record.save(false)
         else
+          errors.add_to_base(I18n.t('error_messages.facebook_connect_by_unregistered_user',
+              :default => 'Your Facebook account is not connected to any registered users on file.'))
+
           false
         end
-      end
-
-      def facebook_login_params
-        {
-          'api_key' => self.class.facebook_api_key,
-          'req_perms' => self.class.facebook_permissions.join(','),
-          'next' => self.controller.request.url,
-          'v' => '1.0',
-          'connect_display' => 'popup',
-          'fbconnect' => 'true',
-          'return_session' => 'true'
-        }
-      end
-
-      def facebook_login_url
-        params = self.facebook_login_params.map do |key, value|
-          "#{CGI.escape(key)}=#{CGI.escape(value)}"
-        end
-
-        "http://www.facebook.com/login.php?#{params.join('&')}"
       end
     end
   end
