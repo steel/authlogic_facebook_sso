@@ -130,7 +130,7 @@ module AuthlogicFacebook
       def validate_by_facebook
         return false unless self.facebook_uid && self.facebook_session
 
-        found_record = klass.first(:conditions => { self.facebook_uid_field => self.facebook_uid })
+        found_record = klass.where(self.facebook_uid_field => self.facebook_uid).first
 
         if found_record || self.facebook_auto_register?
           self.attempted_record = found_record || klass.new
@@ -149,7 +149,7 @@ module AuthlogicFacebook
             self.attempted_record.send(self.facebook_connect_callback, self.details)
           end
 
-          self.attempted_record.save(false)
+          self.attempted_record.save(:validate => false)
         else
           errors.add_to_base(I18n.t('error_messages.facebook_connect_by_unregistered_user',
               :default => 'Your Facebook account is not connected to any registered user on file.'))
