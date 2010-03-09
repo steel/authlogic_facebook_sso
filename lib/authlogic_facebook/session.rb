@@ -134,9 +134,16 @@ module AuthlogicFacebook
 
         if found_record || self.facebook_auto_register?
           self.attempted_record = found_record || klass.new
+
           # use #send in case the attributes are protected
-          self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
           self.attempted_record.send(:"#{self.facebook_session_field}=", self.facebook_session)
+          unless found_record
+            self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
+
+            [:persistence, :single_access].each do |token|
+              self.attempted_record.send("reset_#{token}_token") if self.attempted_record.respond_to? "#{token}_token"
+            end
+          end
 
           if self.attempted_record.respond_to?(self.facebook_connect_callback)
             self.attempted_record.send(self.facebook_connect_callback, self.details)
