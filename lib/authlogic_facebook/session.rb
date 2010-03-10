@@ -30,7 +30,7 @@ module AuthlogicFacebook
       end
       alias_method :facebook_secret_key=, :facebook_secret_key
 
-      # What user field should be used for the facebook UID?
+      # Which user field should be used for the facebook UID?
       #
       # * <tt>Default:</tt> :facebook_uid
       # * <tt>Accepts:</tt> Symbol
@@ -39,7 +39,7 @@ module AuthlogicFacebook
       end
       alias_method :facebook_uid_field=, :facebook_uid_field
 
-      # What user field should be used for the facebook session key?
+      # Which user field should be used for the facebook session key?
       #
       # * <tt>Default:</tt> :facebook_session
       # * <tt>Accepts:</tt> Symbol
@@ -47,6 +47,26 @@ module AuthlogicFacebook
         rw_config(:facebook_session_field, value, :facebook_session)
       end
       alias_method :facebook_session_field=, :facebook_session_field
+
+      # Which user attr_writer should be used for the (full) name for
+      # a new user when facebook_auto_register is enabled?
+      #
+      # * <tt>Default:</tt> :name
+      # * <tt>Accepts:</tt> Symbol
+      def facebook_name_field(value=nil)
+        rw_config(:facebook_name_field, value, :name)
+      end
+      alias_method :facebook_name_field=, :facebook_name_field
+
+      # Which User attr_writer should be used for facebook username (if
+      # one exists) for a new user when facebook_auto_register is enabled?
+      #
+      # * <tt>Default:</tt> :facebook_username
+      # * <tt>Accepts:</tt> Symbol
+      def facebook_username_field(value=nil)
+        rw_config(:facebook_username_field, value, :facebook_username)
+      end
+      alias_method :facebook_username_field=, :facebook_username_field
 
       # What extended permissions should be requested from the user?
       #
@@ -68,8 +88,8 @@ module AuthlogicFacebook
       alias_method :facebook_auto_register=, :facebook_auto_register
       alias_method :facebook_auto_register?, :facebook_auto_register
 
-      # What is the name of the method that should be called before the event of
-      # a successful authentication via facebook connect?
+      # Which method should be called before the event of a successful
+      # authentication via facebook connect?
       #
       # * <tt>Default:</tt> :during_connect
       # * <tt>Accepts:</tt> Symbol
@@ -82,10 +102,11 @@ module AuthlogicFacebook
     module Methods
       def self.included(klass)
         klass.class_eval do
-          attr_accessor :facebook_uid, :facebook_session
+          attr_accessor :facebook_uid, :facebook_session, :facebook_name, :facebook_username
           validate :validate_by_facebook, :if => :authenticating_with_facebook?
-          delegate :facebook_auto_register?, :facebook_uid_field, :facebook_session_field, :facebook_api_key, :facebook_secret_key, :facebook_connect_callback,
-              :to => "self.class"
+          delegate :facebook_auto_register?, :facebook_uid_field, :facebook_session_field,
+              :facebook_api_key, :facebook_secret_key, :facebook_connect_callback,
+              :facebook_name_field, :facebook_username_field, :to => "self.class"
         end
       end
 
@@ -109,6 +130,8 @@ module AuthlogicFacebook
           hash = values.first.with_indifferent_access
           self.facebook_uid = hash[:facebook_uid].to_i if hash.key?(:facebook_uid)
           self.facebook_session = hash[:facebook_session]
+          self.facebook_name = hash[:facebook_name]
+          self.facebook_username = hash[:facebook_username]
         end
       end
 
@@ -119,7 +142,7 @@ module AuthlogicFacebook
 
         @facebook_api_params_provided_p =
             (!self.facebook_api_key.blank? && !self.facebook_secret_key.blank? && true) ||
-                warn("Expected #{self.class.name} to declare Facebook API key and secret.  Not authenticating using Facebook." || false)
+                warn("Expected #{self.class.name} to declare Facebook API key and secret. Not authenticating using Facebook." || false)
       end
 
       # Override this if you only want some requests to use facebook
@@ -139,6 +162,8 @@ module AuthlogicFacebook
           self.attempted_record.send(:"#{self.facebook_session_field}=", self.facebook_session)
           unless found_record
             self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
+            self.attempted_record.send(:"#{self.facebook_name_field}=", self.facebook_name) if self.attempted_record.respond_to? "#{self.facebook_name_field}="
+            self.attempted_record.send(:"#{self.facebook_username_field}=", self.facebook_username) if self.attempted_record.respond_to?("#{self.facebook_username_field}=") && !self.facebook_username.blank?
 
             [:persistence, :single_access].each do |token|
               self.attempted_record.send("reset_#{token}_token") if self.attempted_record.respond_to? "#{token}_token"
