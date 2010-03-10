@@ -121,7 +121,7 @@ module AuthlogicFacebook
           super
         end
       end
-
+      
       # Hooks into credentials so that you can pass :facebook_uid and :facebook_session keys.
       def credentials=(value)
         super
@@ -151,16 +151,17 @@ module AuthlogicFacebook
       end
 
       def validate_by_facebook
-        return false unless self.facebook_uid && self.facebook_session
+        if self.facebook_uid.nil? || self.facebook_session.nil?
+          errors.add_to_base(I18n.t('error_messages.facebook_connect_failed', :default => 'Authentication via Facebook Connect failed.'))
+          return
+        end
 
-        found_record = klass.where(self.facebook_uid_field => self.facebook_uid).first
+        self.attempted_record = klass.where(self.facebook_uid_field => self.facebook_uid).first || klass.new
 
-        if found_record || self.facebook_auto_register?
-          self.attempted_record = found_record || klass.new
-
-          # use #send in case the attributes are protected
+        if !self.attempted_record.new_record? || self.facebook_auto_register?
           self.attempted_record.send(:"#{self.facebook_session_field}=", self.facebook_session)
-          unless found_record
+
+          if self.attempted_record.new_record?
             self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
             self.attempted_record.send(:"#{self.facebook_name_field}=", self.facebook_name) if self.attempted_record.respond_to? "#{self.facebook_name_field}="
             self.attempted_record.send(:"#{self.facebook_username_field}=", self.facebook_username) if self.attempted_record.respond_to?("#{self.facebook_username_field}=") && !self.facebook_username.blank?
@@ -173,15 +174,11 @@ module AuthlogicFacebook
           if self.attempted_record.respond_to?(self.facebook_connect_callback)
             self.attempted_record.send(self.facebook_connect_callback, self.details)
           end
-
-          self.attempted_record.save(:validate => false)
         else
-          errors.add_to_base(I18n.t('error_messages.facebook_connect_by_unregistered_user',
-              :default => 'Your Facebook account is not connected to any registered user on file.'))
-
-          false
+          errors.add_to_base(I18n.t('error_messages.facebook_connect_by_unregistered_user', :default => 'Your Facebook account is not connected to any registered user on file.'))
         end
       end
+
     end
   end
 end
