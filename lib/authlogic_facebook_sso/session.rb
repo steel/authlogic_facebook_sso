@@ -1,6 +1,6 @@
 require 'digest/md5'
 
-module AuthlogicFacebook
+module AuthlogicFacebookSso
   module Session
     def self.included(klass)
       klass.class_eval do

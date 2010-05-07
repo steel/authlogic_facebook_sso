@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{authlogic_facebook}
-  s.version = "1.3.0"
+  s.name = %q{authlogic_facebook_sso}
+  s.version = "0.9"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Rusty Burchfield, Brian Schroeder"]
+  s.authors = ["Brian Schroeder, Rusty Burchfield"]
   s.date = %q{2010-05-07}
-  s.description = %q{Authlogic plugin to support Facebook's single sign-on.}
-  s.email = %q{GICodeWarrior@gmail.com, bts@gmail.com}
+  s.description = %q{Authlogic plugin for Facebook single sign-on support}
+  s.email = %q{bts@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
      "README.rdoc"
@@ -23,24 +23,24 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
-     "authlogic_facebook.gemspec",
+     "authlogic_facebook_sso.gemspec",
      "init.rb",
-     "lib/authlogic_facebook.rb",
-     "lib/authlogic_facebook/acts_as_authentic.rb",
-     "lib/authlogic_facebook/helper.rb",
-     "lib/authlogic_facebook/session.rb",
+     "lib/authlogic_facebook_sso.rb",
+     "lib/authlogic_facebook_sso/acts_as_authentic.rb",
+     "lib/authlogic_facebook_sso/helper.rb",
+     "lib/authlogic_facebook_sso/session.rb",
      "rails/init.rb",
-     "spec/authlogic_facebook_spec.rb",
+     "spec/authlogic_facebook_sso_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb"
   ]
-  s.homepage = %q{http://github.com/bts/authlogic_facebook}
+  s.homepage = %q{http://github.com/bts/authlogic_facebook_sso}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
-  s.summary = %q{Authlogic plugin to support Facebook's single sign-on.}
+  s.summary = %q{Authlogic plugin for Facebook single sign-on support}
   s.test_files = [
-    "spec/authlogic_facebook_spec.rb",
+    "spec/authlogic_facebook_sso_spec.rb",
      "spec/spec_helper.rb"
   ]
 

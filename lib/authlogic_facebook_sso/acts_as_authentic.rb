@@ -1,4 +1,4 @@
-module AuthlogicFacebook
+module AuthlogicFacebookSso
   module ActsAsAuthentic
     def self.included(klass)
       klass.class_eval do

@@ -1,6 +1,6 @@
-= authlogic_facebook
+= authlogic_facebook_sso
 
-This is a Facebook Connect plugin for Authlogic. Facebooker is not required.
+Authlogic plugin for Facebook single sign-on support
 
 == Note on Patches/Pull Requests
 

@@ -1,1 +1,1 @@
-require 'authlogic_facebook'
+require 'authlogic_facebook_sso'

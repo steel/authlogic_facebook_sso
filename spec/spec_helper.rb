@@ -1,6 +1,6 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'authlogic_facebook'
+require 'authlogic_facebook_sso'
 require 'spec'
 require 'spec/autorun'
 
