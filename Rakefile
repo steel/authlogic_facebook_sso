@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "authlogic_facebook"
-    gem.summary = %Q{Authlogic plugin to support Facebook Connect without Facebooker.}
-    gem.description = %Q{Authlogic plugin to support Facebook Connect without Facebooker.}
+    gem.summary = %Q{Authlogic plugin to support Facebook's single sign-on.}
+    gem.description = %Q{Authlogic plugin to support Facebook's single sign-on.}
     gem.email = "GICodeWarrior@gmail.com, bts@gmail.com"
     gem.homepage = "http://github.com/bts/authlogic_facebook"
     gem.authors = ["Rusty Burchfield, Brian Schroeder"]

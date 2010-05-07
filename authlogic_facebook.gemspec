@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{authlogic_facebook}
-  s.version = "1.2.0"
+  s.version = "1.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rusty Burchfield, Brian Schroeder"]
-  s.date = %q{2010-03-09}
-  s.description = %q{Authlogic plugin to support Facebook Connect without Facebooker.}
+  s.date = %q{2010-05-07}
+  s.description = %q{Authlogic plugin to support Facebook's single sign-on.}
   s.email = %q{GICodeWarrior@gmail.com, bts@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -38,7 +38,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
-  s.summary = %q{Authlogic plugin to support Facebook Connect without Facebooker.}
+  s.summary = %q{Authlogic plugin to support Facebook's single sign-on.}
   s.test_files = [
     "spec/authlogic_facebook_spec.rb",
      "spec/spec_helper.rb"
