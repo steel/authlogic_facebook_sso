@@ -104,7 +104,7 @@ module AuthlogicFacebook
     module Methods
       def self.included(klass)
         klass.class_eval do
-          attr_accessor :facebook_uid, :facebook_session, :facebook_name, :facebook_username
+          attr_accessor :facebook_name, :facebook_username
           validate :validate_by_facebook, :if => :authenticating_with_facebook?
           delegate :facebook_auto_register?, :facebook_uid_field, :facebook_session_field,
               :facebook_api_key, :facebook_secret_key, :facebook_connect_callback,
@@ -129,8 +129,6 @@ module AuthlogicFacebook
         values = value.is_a?(Array) ? value : [value]
         if values.first.is_a?(Hash)
           hash = values.first.with_indifferent_access
-          self.facebook_uid = hash[:facebook_uid].to_i if hash.key?(:facebook_uid)
-          self.facebook_session = hash[:facebook_session]
           self.facebook_name = hash[:facebook_name]
           self.facebook_username = hash[:facebook_username]
 
@@ -172,6 +170,14 @@ module AuthlogicFacebook
             end
 
         Digest::MD5.hexdigest(payload + self.facebook_secret_key) == self.cookie_data['sig']
+      end
+
+      def facebook_uid
+        @facebook_uid ||= self.cookie_data['uid'].to_i
+      end
+
+      def facebook_session
+        @facebook_session ||= self.cookie_data['session_key']
       end
 
       def validate_by_facebook
