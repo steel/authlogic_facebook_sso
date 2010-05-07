@@ -12,7 +12,7 @@ module AuthlogicFacebook
     module Config
       # REQUIRED
       #
-      # Specify your api_key.
+      # Your Facebook API key.
       #
       # * <tt>Default:</tt> nil
       # * <tt>Accepts:</tt> String
@@ -23,7 +23,7 @@ module AuthlogicFacebook
 
       # REQUIRED
       #
-      # Specify your secret_key.
+      # Your Facebook API secret key.
       #
       # * <tt>Default:</tt> nil
       # * <tt>Accepts:</tt> String
@@ -69,15 +69,6 @@ module AuthlogicFacebook
         rw_config(:facebook_username_field, value, :facebook_username)
       end
       alias_method :facebook_username_field=, :facebook_username_field
-
-      # What extended permissions should be requested from the user?
-      #
-      # * <tt>Default:</tt> []
-      # * <tt>Accepts:</tt> Array of Strings
-      def facebook_permissions(value=nil)
-        rw_config(:facebook_permissions, value, [])
-      end
-      alias_method :facebook_permissions=, :facebook_permissions
 
       # Should a new user be automatically created if there is no user with
       # given facebook uid?
@@ -138,6 +129,7 @@ module AuthlogicFacebook
 
       protected
 
+      # Cookie set by the Facebook JS SDK
       def raw_cookie
         @raw_cookie ||= controller.cookies["fbs_#{self.facebook_api_key}"]
       end
