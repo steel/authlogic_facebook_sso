@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 module AuthlogicFacebook
   module Session
     def self.included(klass)
@@ -110,19 +112,18 @@ module AuthlogicFacebook
         end
       end
 
-      # Hooks into credentials to print out meaningful credentials for Facebook connect.
+      # For printing out meaningful credentials
       def credentials
         if self.authenticating_with_facebook?
-          details = {
-            :facebook_uid => self.send(self.facebook_uid_field),
-            :facebook_session => self.send(self.facebook_session_field)
+          {
+            :facebook_cookie => self.raw_cookie
           }
         else
           super
         end
       end
-      
-      # Hooks into credentials so that you can pass :facebook_uid and :facebook_session keys.
+
+      # Allow facebook values to be passed in to aid in account creation
       def credentials=(value)
         super
         values = value.is_a?(Array) ? value : [value]
@@ -132,26 +133,49 @@ module AuthlogicFacebook
           self.facebook_session = hash[:facebook_session]
           self.facebook_name = hash[:facebook_name]
           self.facebook_username = hash[:facebook_username]
+
+          hash
         end
       end
 
       protected
 
-      def facebook_api_params_provided?
-        return @facebook_api_params_provided_p if defined? @facebook_api_params_provided_p
+      def raw_cookie
+        @raw_cookie ||= controller.cookies["fbs_#{self.facebook_api_key}"]
+      end
 
-        @facebook_api_params_provided_p =
-            (!self.facebook_api_key.blank? && !self.facebook_secret_key.blank? && true) ||
-                warn("Expected #{self.class.name} to declare Facebook API key and secret. Not authenticating using Facebook." || false)
+      def facebook_api_keys_provided?
+        (!self.facebook_api_key.blank? && !self.facebook_secret_key.blank?) ||
+            warn("Expected #{self.class.name} to declare Facebook API key and secret. Not authenticating using Facebook." || false)
       end
 
       # Override this if you only want some requests to use facebook
       def authenticating_with_facebook?
-        self.facebook_api_params_provided? && !authenticating_with_unauthorized_record?
+        !authenticating_with_unauthorized_record? && self.facebook_api_keys_provided? && self.raw_cookie
+      end
+
+      def cookie_data
+        @cookie_data ||= self.raw_cookie.
+            split('&').
+            map { |pair| pair.split('=') }.
+            inject({}) do |hash, (key, value)|
+              hash[key] = value; hash
+            end
+      end
+
+      def valid_cookie?
+        payload = self.cookie_data.
+            sort_by(&:first).
+            reject { |(key, _)| 'sig' == key }.
+            inject('') do |payload, (key, value)|
+              payload << "#{key}=#{value}"
+            end
+
+        Digest::MD5.hexdigest(payload + self.facebook_secret_key) == self.cookie_data['sig']
       end
 
       def validate_by_facebook
-        if self.facebook_uid.nil? || self.facebook_session.nil?
+        if !self.valid_cookie?
           errors.add_to_base(I18n.t('error_messages.facebook_connect_failed', :default => 'Authentication via Facebook Connect failed.'))
           return
         end
