@@ -41,14 +41,14 @@ module AuthlogicFacebook
       end
       alias_method :facebook_uid_field=, :facebook_uid_field
 
-      # Which user field should be used for the facebook session key?
+      # Which user field should be used for the facebook access token?
       #
-      # * <tt>Default:</tt> :facebook_session
+      # * <tt>Default:</tt> :facebook_access_token
       # * <tt>Accepts:</tt> Symbol
-      def facebook_session_field(value=nil)
-        rw_config(:facebook_session_field, value, :facebook_session)
+      def facebook_access_token_field(value=nil)
+        rw_config(:facebook_access_token_field, value, :facebook_access_token)
       end
-      alias_method :facebook_session_field=, :facebook_session_field
+      alias_method :facebook_access_token_field=, :facebook_access_token_field
 
       # Which user attr_writer should be used for the (full) name for
       # a new user when facebook_auto_register is enabled?
@@ -106,7 +106,7 @@ module AuthlogicFacebook
         klass.class_eval do
           attr_accessor :facebook_name, :facebook_username
           validate :validate_by_facebook, :if => :authenticating_with_facebook?
-          delegate :facebook_auto_register?, :facebook_uid_field, :facebook_session_field,
+          delegate :facebook_auto_register?, :facebook_uid_field, :facebook_access_token_field,
               :facebook_api_key, :facebook_secret_key, :facebook_connect_callback,
               :facebook_name_field, :facebook_username_field, :to => "self.class"
         end
@@ -176,8 +176,8 @@ module AuthlogicFacebook
         @facebook_uid ||= self.cookie_data['uid'].to_i
       end
 
-      def facebook_session
-        @facebook_session ||= self.cookie_data['session_key']
+      def facebook_access_token
+        @facebook_access_token ||= self.cookie_data['access_token']
       end
 
       def validate_by_facebook
@@ -189,7 +189,7 @@ module AuthlogicFacebook
         self.attempted_record = klass.where(self.facebook_uid_field => self.facebook_uid).first || klass.new
 
         if !self.attempted_record.new_record? || self.facebook_auto_register?
-          self.attempted_record.send(:"#{self.facebook_session_field}=", self.facebook_session)
+          self.attempted_record.send(:"#{self.facebook_access_token_field}=", self.facebook_access_token)
 
           if self.attempted_record.new_record?
             self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
