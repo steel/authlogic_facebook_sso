@@ -79,7 +79,14 @@ module AuthlogicFacebookSso
         rw_config(:facebook_auto_register, value, false)
       end
       alias_method :facebook_auto_register=, :facebook_auto_register
-      alias_method :facebook_auto_register?, :facebook_auto_register
+
+      def facebook_auto_register?
+        if self.facebook_auto_register.is_a? Proc
+          self.facebook_auto_register.call
+        else
+          self.facebook_auto_register
+        end
+      end
 
       # Which method should be called before the event of a successful
       # authentication via facebook connect?
