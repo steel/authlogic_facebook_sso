@@ -201,7 +201,7 @@ module AuthlogicFacebookSso
           end
 
           if self.attempted_record.respond_to?(self.facebook_connect_callback)
-            self.attempted_record.send(self.facebook_connect_callback, self.details)
+            self.attempted_record.send(self.facebook_connect_callback, self)
           end
         else
           errors.add_to_base(I18n.t('error_messages.facebook_connect_by_unregistered_user', :default => 'Your Facebook account is not connected to any registered user on file.'))
