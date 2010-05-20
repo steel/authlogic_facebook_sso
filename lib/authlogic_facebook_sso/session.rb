@@ -102,8 +102,7 @@ module AuthlogicFacebookSso
     module Methods
       def self.included(klass)
         klass.class_eval do
-          attr_accessor :facebook_name, :facebook_username, :authenticate_with_facebook
-          alias :authenticate_with_facebook? :authenticate_with_facebook
+          attr_accessor :facebook_name, :facebook_username
           validate :validate_by_facebook, :if => :authenticating_with_facebook?
           delegate :facebook_auto_register?, :facebook_uid_field, :facebook_access_token_field,
               :facebook_api_key, :facebook_secret_key, :facebook_connect_callback,
@@ -153,7 +152,7 @@ module AuthlogicFacebookSso
 
       # Override this if you only want some requests to use facebook
       def authenticating_with_facebook?
-        !authenticating_with_unauthorized_record? && self.authenticate_with_facebook? && self.facebook_api_keys_provided? && self.raw_cookie
+        !authenticating_with_unauthorized_record? && self.facebook_api_keys_provided? && self.raw_cookie
       end
 
       def cookie_data
