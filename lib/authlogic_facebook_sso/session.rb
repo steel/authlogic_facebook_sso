@@ -182,6 +182,10 @@ module AuthlogicFacebookSso
       def facebook_access_token
         @facebook_access_token ||= self.cookie_data['access_token']
       end
+      
+      def get_record
+        klass.where(self.facebook_uid_field => self.facebook_uid).first || klass.new
+      end
 
       def validate_by_facebook
         if !self.valid_cookie?
@@ -189,7 +193,7 @@ module AuthlogicFacebookSso
           return
         end
 
-        self.attempted_record = klass.where(self.facebook_uid_field => self.facebook_uid).first || klass.new
+        self.attempted_record = get_record
 
         if !self.attempted_record.new_record? || self.facebook_auto_register?
           self.attempted_record.send(:"#{self.facebook_access_token_field}=", self.facebook_access_token)
