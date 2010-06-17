@@ -197,9 +197,9 @@ module AuthlogicFacebookSso
 
         if !self.attempted_record.new_record? || self.facebook_auto_register?
           self.attempted_record.send(:"#{self.facebook_access_token_field}=", self.facebook_access_token)
-
+          self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
+            
           if self.attempted_record.new_record?
-            self.attempted_record.send(:"#{self.facebook_uid_field}=", self.facebook_uid)
             self.attempted_record.send(:"#{self.facebook_name_field}=", self.facebook_name) if self.attempted_record.respond_to? "#{self.facebook_name_field}="
             self.attempted_record.send(:"#{self.facebook_username_field}=", self.facebook_username) if self.attempted_record.respond_to?("#{self.facebook_username_field}=") && !self.facebook_username.blank?
 
